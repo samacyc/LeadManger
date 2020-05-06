@@ -2,10 +2,10 @@ import axios from 'axios'
 
 
 import { GET_LEADS, DELETE_LEAD, ADD_Lead, GET_ERRORS } from './types'
-import { create_message } from './message'
-export const getLeads = () => dispatch => {
+import { create_message, create_error } from './message'
+export const getLeads = () => (dispatch, getState) => {
 
-    axios.get('/api/leads').then(
+    axios.get('/api/leads', config(getState)).then(
         res => {
             const data = res.data
             dispatch({
@@ -13,12 +13,18 @@ export const getLeads = () => dispatch => {
                 payload: data
             });
         }
-    ).catch(err => console.log(err))
+    ).catch(err => {
+        const errors = {
+            msg: err.response.data,
+            status: err.response.status
+        }
+        dispatch(create_error(errors))
+    })
 }
 
-export const DeleteLead = (id) => dispatch => {
+export const DeleteLead = (id) => (dispatch, getState) => {
 
-    axios.delete(`/api/leads/${id}`).then(
+    axios.delete(`/api/leads/${id}`, config(getState)).then(
         res => {
             dispatch(create_message({ deleteLead: 'Lead Deleted' }))
             dispatch({
@@ -28,9 +34,9 @@ export const DeleteLead = (id) => dispatch => {
         }
     ).catch(err => console.log(err))
 }
-export const addLead = (lead) => dispatch => {
+export const addLead = (lead) => (dispatch, getState) => {
 
-    axios.post("/api/leads/", lead).then(
+    axios.post("/api/leads/", lead, config(getState)).then(
         res => {
             const data = res.data
             dispatch(create_message({ createLead: 'Lead Created' }))
@@ -45,9 +51,22 @@ export const addLead = (lead) => dispatch => {
             msg: err.response.data,
             status: err.response.status
         }
-        dispatch({
-            type: GET_ERRORS,
-            payload: errors
-        })
+        dispatch(create_error(errors))
     })
+}
+
+const config = (getState) => {
+    const token = getState().auth.token
+    let config = {
+        headers: {
+            "Content-Type": 'application/json'
+        }
+    }
+
+    if (token) {
+        config.headers['Authorization'] = `Token ${token}`
+    }
+
+    return config
+
 }

@@ -38,9 +38,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'leads',
-    'rest_framework' , 
-    'frontend'
+    'rest_framework',
+    'frontend',
+    'knox',
+    'accounts'
 ]
+REST_FRAMEWORK = {
+    # 'DEFAULT_PERMISSION_CLASSES': [  # remove
+    #     'rest_framework.permissions.AllowAny'
+    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (  # added
+        'knox.auth.TokenAuthentication',
+    )
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
